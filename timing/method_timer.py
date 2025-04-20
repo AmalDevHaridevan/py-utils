@@ -9,6 +9,7 @@ except ImportError:
 import numpy as np
 import copy
 import weakref
+from multiproc.multiproc_class import MultiProcCls # incompatible with MethodTimer
 
 class MethodTimer:
     """Wapper class for arbitrary classes that enables timinng for indivudial methods"""
@@ -39,11 +40,15 @@ class MethodTimer:
             >>> timing_data = wrapped_obj.data_    
         """
         if isinstance(cls, type):
+            if issubclass(cls, MultiProcCls):
+                raise RuntimeError("Cannot use MethodTimer with MultiProcCls, use raw class for timing")
             try:
                 obj_ = cls(*args, **kwargs)
             except TypeError as t:
                 raise RuntimeError(f"Insufficient args to init class {cls}, got following erros {t}") 
         else:
+            if isinstance(cls, MultiProcCls):
+                raise RuntimeError("Cannot use MethodTimer with MultiProcCls, use raw class for timing")
             obj_ = weakref.proxy(cls)
         time_map_ = dict()
         for name in names:
